@@ -9,7 +9,8 @@ const compression = require("compression");
 const helemt = require("helmet");
 const app = express();
 const passport = require("passport");
-
+const dotenv = require("dotenv");
+dotenv.config();
 
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // application/json
@@ -40,8 +41,8 @@ app.use((error,req,res,next)=>{
     res.status(status).json({message:message,data:data});
 })
 //const mongodb_URL = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.cd2f9.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}`;
-mongoose.connect("mongodb+srv://dbUser2:dbUser2@cluster0.cd2f9.mongodb.net/test?retryWrites=true&w=majority")
+mongoose.connect(process.env.MONGO_URL)
 .then(result=>{
     console.log('connected');
-    app.listen(process.env.POST || 8080)})
+    app.listen(process.env.PORT || 8080)})
 .catch(err=>console.log(err));
