@@ -5,9 +5,14 @@ const feedRoutes = require('./routes/feed');
 const authRoutes = require('./routes/auth');
 const messageRoutes = require('./routes/message');
 const ratingRoutes = require('./routes/Rating');
+const commentRoutes = require("./routes/comment");
 const compression = require("compression");
 const helemt = require("helmet");
 const app = express();
+
+const Profile = require("./routes/profProfiles");
+const multer = require("multer");
+const ProfProfile = require("./models/profprofile");
 const passport = require("passport");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -23,11 +28,13 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
 });
-
+app.use('/auth',authRoutes);
 app.use(feedRoutes);
 app.use(messageRoutes);
 app.use(ratingRoutes);
-app.use('/auth',authRoutes);
+app.use(Profile);
+app.use(commentRoutes);
+
 app.use(helemt());
 app.use(compression());
 app.get('/',(req,res)=>{
@@ -40,6 +47,61 @@ app.use((error,req,res,next)=>{
     const data = error.data;
     res.status(status).json({message:message,data:data});
 })
+
+
+app.set("view engine", "ejs");
+
+app.use(express.static(__dirname + "./public/"));
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "../prof/public/uploads/");
+  },
+  filename: (req, file, cb) => {
+    console.log(file);
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1021 * 1024 * 5,
+  },
+});
+
+app.get("/profs", (req, res) => {
+  res.render("imagesPage");
+});
+
+app.post("/profs", upload.single("file"), (req, res, next) => {
+  const profile = new ProfProfile({
+    name: req.body.name,
+    domain: req.body.domain,
+    college: req.body.college,
+    breif: req.body.breif,
+    details: req.body.details,
+    email_id: req.body.email_id,
+    researchgate: req.body.researchgate,
+    image: req.file.filename,
+  });
+
+  profile
+    .save()
+    .then((results) => {
+      console.log("Added data");
+    })
+    .catch((err) => console.log(err));
+
+  res.send("img");
+});
+
+
+
+app.use((req, res) => {
+  res.status(404).send("<h1>OOPs 404 </h1>");
+});
+
 //const mongodb_URL = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.cd2f9.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}`;
 mongoose.connect(process.env.MONGO_URL)
 .then(result=>{
