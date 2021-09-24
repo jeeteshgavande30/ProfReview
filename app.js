@@ -55,7 +55,7 @@ app.use(express.static(__dirname + "./public/"));
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "../prof/public/uploads/");
+    cb(null, "./Client/public/uploads/");
   },
   filename: (req, file, cb) => {
     console.log(file);
@@ -101,6 +101,10 @@ app.post("/profs", upload.single("file"), (req, res, next) => {
 app.use((req, res) => {
   res.status(404).send("<h1>OOPs 404 </h1>");
 });
+if(process.env.NODE_ENV==="production")
+{
+
+}
 
 //const mongodb_URL = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.cd2f9.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}`;
 mongoose.connect(process.env.MONGO_URL)
