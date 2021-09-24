@@ -9,10 +9,10 @@ const commentRoutes = require("./routes/comment");
 const compression = require("compression");
 const helemt = require("helmet");
 const app = express();
-
+const path = require('path');
 const Profile = require("./routes/profProfiles");
-const multer = require("multer");
-const ProfProfile = require("./models/profprofile");
+//const multer = require("multer");
+//const ProfProfile = require("./models/profprofile");
 const passport = require("passport");
 const dotenv = require("dotenv");
 dotenv.config();
@@ -37,9 +37,7 @@ app.use(commentRoutes);
 
 app.use(helemt());
 app.use(compression());
-app.get('/',(req,res)=>{
-    res.send("App is running");
-})
+
 app.use((error,req,res,next)=>{
     console.log(error);
     const status = error.statusCode || 500;
@@ -52,7 +50,16 @@ app.use((error,req,res,next)=>{
 app.set("view engine", "ejs");
 
 app.use(express.static(__dirname + "./public/"));
+if(process.env.NODE_ENV==="production")
+{
+    app.use(express.static(path.resolve(__dirname,'./Client/build')))
+    app.get('*',(req,res)=>{
+      res.sendFile(path.resolve(__dirname,'./Client/build','index.html'))
+    })
+}
 
+
+/*
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "./Client/public/uploads/");
@@ -69,7 +76,6 @@ const upload = multer({
     fileSize: 1021 * 1024 * 5,
   },
 });
-
 app.get("/profs", (req, res) => {
   res.render("imagesPage");
 });
@@ -97,14 +103,11 @@ app.post("/profs", upload.single("file"), (req, res, next) => {
 });
 
 
+*/
 
 app.use((req, res) => {
   res.status(404).send("<h1>OOPs 404 </h1>");
 });
-if(process.env.NODE_ENV==="production")
-{
-
-}
 
 //const mongodb_URL = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.cd2f9.mongodb.net/${process.env.MONGO_DEFAULT_DATABASE}`;
 mongoose.connect(process.env.MONGO_URL)
